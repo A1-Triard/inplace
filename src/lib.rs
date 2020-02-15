@@ -49,7 +49,7 @@ impl<T> AsMut<T> for Inplace<T> {
 mod tests {
     use crate::*;
     use arraystring::ArrayString;
-    use typenum::U255;
+    use typenum::{U255, Unsigned};
     use arraystring::prelude::Capacity;
 
     struct UnclonableValue {
@@ -63,6 +63,9 @@ mod tests {
     fn replace<T: Capacity>(s: ArrayString<T>, f: char, t: char) -> ArrayString<T> {
         let mut res = ArrayString::new();
         for c in s.chars() {
+            if s.len() > <T as Unsigned>::to_u8() - 4 {
+                panic!();
+            }
             let r = if c == f { t } else { c };
             unsafe { res.push_unchecked(r) };
         }
