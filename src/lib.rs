@@ -1,5 +1,11 @@
+#![no_std]
 #![feature(maybe_uninit_ref)]
 #![feature(maybe_uninit_extra)]
+#[cfg(test)]
+extern crate typenum;
+#[cfg(test)]
+extern crate arraystring;
+
 use core::mem::MaybeUninit;
 use core::borrow::{Borrow, BorrowMut};
 
@@ -42,17 +48,29 @@ impl<T> AsMut<T> for Inplace<T> {
 #[cfg(test)]
 mod tests {
     use crate::*;
-    
+    use arraystring::ArrayString;
+    use typenum::U255;
+    use arraystring::prelude::Capacity;
+
     struct UnclonableValue {
-        value: String,
+        value: ArrayString<U255>,
     }
     
     struct Container<'a> {
         value: &'a mut Inplace<UnclonableValue>,
     }
     
+    fn replace<T: Capacity>(s: ArrayString<T>, f: char, t: char) -> ArrayString<T> {
+        let mut res = ArrayString::new();
+        for c in s.chars() {
+            let r = if c == f { t } else { c };
+            unsafe { res.push_unchecked(r) };
+        }
+        res
+    }
+    
     fn change(v: UnclonableValue) -> UnclonableValue {
-        UnclonableValue { value: v.value.replace("0", "1") }
+        UnclonableValue { value: replace(v.value, '0', '1') }
     }
     
     fn change_inplace(v: &mut Container) {
@@ -64,6 +82,6 @@ mod tests {
         let mut value = UnclonableValue { value: "0123401234".into() }.into();
         let mut container = Container { value: &mut value };
         change_inplace(&mut container);
-        assert_eq!(value.take().value, "1123411234");
+        assert_eq!(value.take().value, ArrayString::from("1123411234"));
     }
 }
