@@ -8,8 +8,60 @@ extern crate arraystring;
 
 use core::mem::MaybeUninit;
 use core::borrow::{Borrow, BorrowMut};
+use core::fmt::{self, Debug, Display};
+use core::hash::{Hash, Hasher};
+use core::cmp::Ordering;
+use core::ops::{Deref, DerefMut};
 
 pub struct Inplace<T>(MaybeUninit<T>);
+
+impl<T: Debug> Debug for Inplace<T> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        self.as_ref().fmt(f)
+    }
+}
+
+impl<T: Display> Display for Inplace<T> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        self.as_ref().fmt(f)
+    }
+}
+
+impl<T: Default> Default for Inplace<T> {
+    fn default() -> Inplace<T> { T::default().into() }
+}
+
+impl<T: Clone> Clone for Inplace<T> {
+    fn clone(&self) -> Inplace<T> { self.as_ref().clone().into() }
+}
+
+impl<T: Copy> Copy for Inplace<T> { }
+
+impl<T: Hash> Hash for Inplace<T> {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.as_ref().hash(state)
+    }
+}
+
+impl<T: PartialEq> PartialEq for Inplace<T> {
+    fn eq(&self, other: &Self) -> bool {
+        self.as_ref().eq(other.as_ref())
+    }
+}
+
+impl<T: Eq> Eq for Inplace<T> { }
+
+impl<T: Ord> Ord for Inplace<T> {
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.as_ref().cmp(other.as_ref())
+    }
+}
+
+impl<T: PartialOrd> PartialOrd for Inplace<T> {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        self.as_ref().partial_cmp(other.as_ref())
+    }
+}
 
 impl<T> Inplace<T> {
     pub fn take(self) -> T { unsafe { self.0.assume_init() } }
@@ -43,6 +95,16 @@ impl<T> AsRef<T> for Inplace<T> {
 
 impl<T> AsMut<T> for Inplace<T> {
     fn as_mut(&mut self) -> &mut T { unsafe { self.0.get_mut() } }
+}
+
+impl<T> Deref for Inplace<T> {
+    type Target = T;
+
+    fn deref(&self) -> &Self::Target { self.as_ref() }
+}
+
+impl<T> DerefMut for Inplace<T> {
+    fn deref_mut(&mut self) -> &mut Self::Target { self.as_mut() }
 }
 
 #[cfg(test)]
