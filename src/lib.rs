@@ -64,10 +64,12 @@ impl<T: PartialOrd> PartialOrd for Inplace<T> {
 }
 
 impl<T> Inplace<T> {
-    pub fn take(self) -> T { unsafe { self.0.assume_init() } }
+    pub fn new(v: T) -> Inplace<T> { Inplace(MaybeUninit::new(v)) }
+    
+    pub fn deref_move(self) -> T { unsafe { self.0.assume_init() } }
 
-    pub fn inplace<R>(&mut self, f: impl FnOnce(T) -> (T, R)) -> R {
-        let (v, r) = f(unsafe { self.0.read() });
+    pub fn inplace<R>(&mut self, f: impl FnOnce(T) -> (R, T)) -> R {
+        let (r, v) = f(unsafe { self.0.read() });
         self.0.write(v);
         r
     }
@@ -78,7 +80,7 @@ impl<T> Inplace<T> {
 }
 
 impl<T> From<T> for Inplace<T> {
-    fn from(v: T) -> Inplace<T> { Inplace(MaybeUninit::new(v)) }
+    fn from(v: T) -> Inplace<T> { Inplace::new(v) }
 }
 
 impl<T> Borrow<T> for Inplace<T> {
@@ -147,6 +149,6 @@ mod tests {
         let mut value = UnclonableValue { value: "0123401234".into() }.into();
         let mut container = Container { value: &mut value };
         change_inplace(&mut container);
-        assert_eq!(value.take().value, ArrayString::from("1123411234"));
+        assert_eq!(value.deref_move().value, ArrayString::from("1123411234"));
     }
 }

@@ -1,6 +1,6 @@
 [package]
 name = "inplace"
-version = "0.0.3"
+version = "0.0.4"
 authors = ["warlock <internalmike@gmail.com>"]
 description = "A container that allows you temporarily take ownership of the stored value."
 readme = "README.md"
