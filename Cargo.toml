@@ -6,6 +6,7 @@ description = "A container that allows you temporarily take ownership of the sto
 readme = "README.md"
 documentation = "https://docs.rs/inplace/"
 keywords = ["replace", "mem", "state", "change", "modify"]
+categories = ["no-std", "rust-patterns"]
 license = "MIT/Apache-2.0"
 repository = "https://github.com/A1-Triard/inplace"
 
