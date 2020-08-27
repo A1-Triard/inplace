@@ -1,6 +1,10 @@
+USE [`replace_with`](https://crates.io/crates/replace_with) INSTEAD!
+
 ![travis](https://travis-ci.org/A1-Triard/inplace.svg?branch=master)
 
 # inplace
+
+USE [`replace_with`](https://crates.io/crates/replace_with) INSTEAD!
 
 A container that allows you temporarily take ownership of the stored value.
 
